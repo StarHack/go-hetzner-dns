@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"time"
 )
 
 type Hetzner struct {
@@ -45,6 +46,21 @@ type RecordUpdateRequest struct {
 	Type   string `json:"type"`
 	Name   string `json:"name"`
 	Value  string `json:"value"`
+}
+
+// Top-level structure that contains the list of primary servers
+type PrimaryServers struct {
+	PrimaryServers []PrimaryServer `json:"primary_servers"`
+}
+
+// A single primary server within the list of primary servers
+type PrimaryServer struct {
+	Port     int       `json:"port"`
+	ID       string    `json:"id"`
+	Created  time.Time `json:"created"`
+	Modified time.Time `json:"modified"`
+	ZoneID   string    `json:"zone_id"`
+	Address  string    `json:"address"`
 }
 
 // API Base URL
@@ -453,4 +469,171 @@ func (h *Hetzner) ImportZoneFile(zoneID, zoneFile string) error {
 	}
 
 	return nil
+}
+
+// Lists all the available Primary Servers
+func (h *Hetzner) FindAllPrimaryServers() (PrimaryServers, error) {
+	url := fmt.Sprintf("%s/primary_servers", h.apiBaseURL())
+
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return PrimaryServers{}, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.Header.Set("Auth-API-Token", h.APIKey)
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return PrimaryServers{}, fmt.Errorf("failed to execute request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return PrimaryServers{}, fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(body))
+	}
+
+	var primaryServers = PrimaryServers{}
+	if err := json.NewDecoder(resp.Body).Decode(&primaryServers); err != nil {
+		return PrimaryServers{}, fmt.Errorf("failed to decode response body: %w", err)
+	}
+	return primaryServers, nil
+}
+
+// Creates a new primary server
+func (h *Hetzner) CreatePrimaryServer(zoneID string, address string, port int) error {
+	url := fmt.Sprintf("%s/primary_servers", h.apiBaseURL())
+
+	var primaryServer = PrimaryServer{}
+	primaryServer.ZoneID = zoneID
+	primaryServer.Address = address
+	primaryServer.Port = port
+
+	requestBody, err := json.Marshal(primaryServer)
+	if err != nil {
+		return fmt.Errorf("failed to marshal request body: %w", err)
+	}
+
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(requestBody))
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Set("Auth-API-Token", h.APIKey)
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to execute request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(body))
+	}
+
+	return nil
+}
+
+// Updates an existing primary server
+func (h *Hetzner) UpdatePrimaryServer(zoneID string, id string, address string, port int) error {
+	url := fmt.Sprintf("%s/primary_servers", h.apiBaseURL())
+
+	var primaryServer = PrimaryServer{}
+	primaryServer.ID = id
+	primaryServer.ZoneID = zoneID
+	primaryServer.Address = address
+	primaryServer.Port = port
+
+	requestBody, err := json.Marshal(primaryServer)
+	if err != nil {
+		return fmt.Errorf("failed to marshal request body: %w", err)
+	}
+
+	req, err := http.NewRequest("PUT", url, bytes.NewBuffer(requestBody))
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Set("Auth-API-Token", h.APIKey)
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to execute request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(body))
+	}
+
+	return nil
+}
+
+// Gets a primary server identified by ID
+func (h *Hetzner) GetPrimaryServer(id string) (PrimaryServer, error) {
+	url := fmt.Sprintf("%s/primary_servers/%s", h.apiBaseURL(), id)
+
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return PrimaryServer{}, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Auth-API-Token", h.APIKey)
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return PrimaryServer{}, fmt.Errorf("failed to execute request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return PrimaryServer{}, fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(body))
+	}
+
+	var primaryServer = PrimaryServer{}
+	if err := json.NewDecoder(resp.Body).Decode(&primaryServer); err != nil {
+		return PrimaryServer{}, fmt.Errorf("failed to decode response body: %w", err)
+	}
+	return primaryServer, nil
+}
+
+// Deletes a primary server
+func (h *Hetzner) DeletePrimaryServer(id string) (PrimaryServer, error) {
+	url := fmt.Sprintf("%s/primary_servers/%s", h.apiBaseURL(), id)
+
+	req, err := http.NewRequest("DELETE", url, nil)
+	if err != nil {
+		return PrimaryServer{}, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Auth-API-Token", h.APIKey)
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return PrimaryServer{}, fmt.Errorf("failed to execute request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return PrimaryServer{}, fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(body))
+	}
+
+	var primaryServer = PrimaryServer{}
+	if err := json.NewDecoder(resp.Body).Decode(&primaryServer); err != nil {
+		return PrimaryServer{}, fmt.Errorf("failed to decode response body: %w", err)
+	}
+	return primaryServer, nil
 }

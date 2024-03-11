@@ -33,7 +33,7 @@ func main() {
 
 ### Building
 
-This is a Go project so download and install the latest version from <https://go.dev/>.Create a new directory `test/` and create a file `main.go` with above file content in it. We may then run the following to init and build the project:
+This is a Go project so download and install the latest version from <https://go.dev/>. Create a new directory `test/` and create a file `main.go` with above file content in it. We may then run the following to init and build the project:
 
 ```
 go mod init test
@@ -73,8 +73,10 @@ As of today, the current version of Hetzner DNS Public API is `1.1.1`. So far, t
 
 ### Primary Servers
 
-- [ ] Get All Primary Servers
-- [ ] Create Primary Server
-- [ ] Get Primary Server
-- [ ] Update Primary Server
-- [ ] Delete Primary Server
+- [?] Get All Primary Servers
+- [?] Create Primary Server
+- [?] Get Primary Server
+- [?] Update Primary Server
+- [?] Delete Primary Server
+
+The primary server endpoints have been implemented but were not tested yet.
