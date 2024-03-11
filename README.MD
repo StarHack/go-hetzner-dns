@@ -7,23 +7,24 @@ This is my implementation of golang support for the Hetzner DNS Public API. This
 ```
 package main
 
-import "fmt"
-import "github.com/StarHack/go-hetzner-dns"
+import (
+	"fmt"
+
+	"github.com/StarHack/go-hetzner-dns"
+)
 
 func main() {
-	h := Hetzner{APIKey: "<your_api_key>"}
+	h := hetzner.Hetzner{APIKey: "<your_api_key>"}
 	zones, err := h.FindAllZones()
 
-	if err == nil {
+	if err != nil {
 		panic(err)
 	}
 
 	for _, zone := range zones {
 		fmt.Println(zone.Name)
 	}
-
 }
-
 ```
 
 ## Status
