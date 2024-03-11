@@ -1,6 +1,6 @@
 # go-hetzner-dns
 
-This is my implementation of golang support for the Hetzner DNS Public API. This project was part of a self-built ACME client implementation.
+This is my implementation of golang support for the [Hetzner Public DNS API](https://dns.hetzner.com/api-docs). This project was part of a self-built ACME client implementation.
 
 ## Sample usage
 
