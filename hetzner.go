@@ -33,6 +33,11 @@ type RecordResponse struct {
 	Modified string `json:"modified"`
 }
 
+// Structure for bulk record updates
+type BulkRecordUpdateRequest struct {
+	Records []RecordUpdateRequest `json:"records"`
+}
+
 // Structure to update a DNS record
 type RecordUpdateRequest struct {
 	ID     string `json:"id"`
@@ -246,6 +251,76 @@ func (h *Hetzner) CreateRecord(zoneID, recordType, recordName, recordValue strin
 	}
 
 	fmt.Println("DNS record created successfully")
+	return nil
+}
+
+// Creates a new bulk of DNS record/value pairs in the specified zone
+func (h *Hetzner) BulkCreateRecord(zoneID string, records []RecordUpdateRequest) error {
+	url := fmt.Sprintf("%s/records/bulk", h.apiBaseURL())
+
+	bulkRequest := BulkRecordUpdateRequest{}
+	bulkRequest.Records = records
+
+	requestBody, err := json.Marshal(bulkRequest)
+	if err != nil {
+		return fmt.Errorf("failed to marshal request body: %w", err)
+	}
+
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(requestBody))
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Auth-API-Token", h.APIKey)
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to execute request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(body))
+	}
+
+	return nil
+}
+
+// Updates a bulk of DNS record/value pairs in the specified zone. Specifying record ID is required for this to work!
+func (h *Hetzner) BulkUpdateRecord(zoneID string, records []RecordUpdateRequest) error {
+	url := fmt.Sprintf("%s/records/bulk", h.apiBaseURL())
+
+	bulkRequest := BulkRecordUpdateRequest{}
+	bulkRequest.Records = records
+
+	requestBody, err := json.Marshal(bulkRequest)
+	if err != nil {
+		return fmt.Errorf("failed to marshal request body: %w", err)
+	}
+
+	req, err := http.NewRequest("PUT", url, bytes.NewBuffer(requestBody))
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Auth-API-Token", h.APIKey)
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to execute request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(body))
+	}
+
 	return nil
 }
 

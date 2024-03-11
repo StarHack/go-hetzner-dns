@@ -68,8 +68,8 @@ As of today, the current version of Hetzner DNS Public API is `1.1.1`. So far, t
 - [x] Get Record
 - [x] Update Record
 - [x] Delete Record
-- [ ] Bulk Create Records
-- [ ] Bulk Update Records
+- [x] Bulk Create Records
+- [x] Bulk Update Records
 
 ### Primary Servers
 
