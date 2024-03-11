@@ -9,6 +9,7 @@ package main
 
 import (
 	"fmt"
+  "os"
 
 	"github.com/StarHack/go-hetzner-dns"
 )
@@ -24,12 +25,26 @@ func main() {
 	for _, zone := range zones {
 		fmt.Println(zone.Name)
 	}
+
+	data, _ := h.ExportZoneFile("example.com")
+	os.WriteFile("zone.txt", data, 0755)
 }
+```
+
+### Building
+
+This is a Go project so download and install the latest version from <https://go.dev/>.Create a new directory `test/` and create a file `main.go` with above file content in it. We may then run the following to init and build the project:
+
+```
+go mod init test
+go get
+go build
+./test
 ```
 
 ## Status
 
-As of today, the current version of Hetzner DNS Public API is `1.1.1`. So far, the following features were implemented or implemented partially.
+As of today, the current version of Hetzner DNS Public API is `1.1.1`. So far, the following **core features** were either implemented completely or implemented partially. A lot of error handling is still missing and so are extras such as pagination.
 
 ### Authentication
 
@@ -42,9 +57,9 @@ As of today, the current version of Hetzner DNS Public API is `1.1.1`. So far, t
 - [x] Get Zone
 - [x] Update Zone
 - [x] Delete Zone
-- [ ] Import Zone file plain
-- [ ] Export Zone file
-- [ ] Validate Zone file plain
+- [x] Import Zone file plain
+- [x] Export Zone file
+- [x] Validate Zone file plain
 
 ### Records
 

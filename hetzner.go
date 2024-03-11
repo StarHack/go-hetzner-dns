@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 )
 
 type Hetzner struct {
@@ -286,5 +287,95 @@ func (h *Hetzner) DeleteRecord(recordID string) error {
 	}
 
 	fmt.Println("DNS record deleted successfully")
+	return nil
+}
+
+// Exports the given DNS zone. If successful, the method returns a byte array with the file contents in it
+func (h *Hetzner) ExportZoneFile(zoneID string) ([]byte, error) {
+	url := fmt.Sprintf("%s/zones/%s/export", h.apiBaseURL(), zoneID)
+
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+	req.Header.Set("Auth-API-Token", h.APIKey)
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("API request failed with status %d", resp.StatusCode)
+	}
+
+	return io.ReadAll(resp.Body)
+}
+
+// Validates a given DNS zone file for validity
+func (h *Hetzner) ValidateZoneFile(zoneFile string) error {
+	url := fmt.Sprintf("%s/zones/file/validate", h.apiBaseURL())
+
+	requestBody, err := os.ReadFile(zoneFile)
+	if err != nil {
+		return fmt.Errorf("failed to read zone file: %w", err)
+	}
+
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(requestBody))
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.Header.Add("Content-Type", "text/plain")
+	req.Header.Set("Auth-API-Token", h.APIKey)
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to execute request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(body))
+	}
+
+	return nil
+}
+
+// Imports a given DNS zone file
+func (h *Hetzner) ImportZoneFile(zoneID, zoneFile string) error {
+	url := fmt.Sprintf("%s/zones/%s/import", h.apiBaseURL(), zoneID)
+
+	requestBody, err := os.ReadFile(zoneFile)
+	if err != nil {
+		return fmt.Errorf("failed to read zone file: %w", err)
+	}
+
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(requestBody))
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.Header.Add("Content-Type", "text/plain")
+	req.Header.Set("Auth-API-Token", h.APIKey)
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to execute request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(body))
+	}
+
 	return nil
 }
