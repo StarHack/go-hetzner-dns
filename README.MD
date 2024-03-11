@@ -8,26 +8,26 @@ This is my implementation of golang support for the [Hetzner Public DNS API](htt
 package main
 
 import (
-	"fmt"
+  "fmt"
   "os"
 
-	"github.com/StarHack/go-hetzner-dns"
+  "github.com/StarHack/go-hetzner-dns"
 )
 
 func main() {
-	h := hetzner.Hetzner{APIKey: "<your_api_key>"}
-	zones, err := h.FindAllZones()
+  h := hetzner.Hetzner{APIKey: "<your_api_key>"}
+  zones, err := h.FindAllZones()
 
-	if err != nil {
-		panic(err)
-	}
+  if err != nil {
+    panic(err)
+  }
 
-	for _, zone := range zones {
-		fmt.Println(zone.Name)
-	}
+  for _, zone := range zones {
+    fmt.Println(zone.Name)
+  }
 
-	data, _ := h.ExportZoneFile("example.com")
-	os.WriteFile("zone.txt", data, 0755)
+  data, _ := h.ExportZoneFile("example.com")
+  os.WriteFile("zone.txt", data, 0755)
 }
 ```
 
