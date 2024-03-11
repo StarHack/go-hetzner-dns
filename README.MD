@@ -4,7 +4,7 @@ This is my implementation of golang support for the Hetzner DNS Public API. This
 
 ## Sample usage
 
-```
+```go
 package main
 
 import (
