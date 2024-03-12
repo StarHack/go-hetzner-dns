@@ -2,6 +2,8 @@
 
 This is my implementation of golang support for the [Hetzner Public DNS API](https://dns.hetzner.com/api-docs). This project was part of a self-built ACME client implementation and it was needed to update DNS records of domains during the ACME Challenge.
 
+Visit [this page](https://dns.hetzner.com/settings/api-token) to generate a Hetzner Public DNS API Token.
+
 ## Sample usage
 
 > Refer to the wiki tab in this repository for further examples.
