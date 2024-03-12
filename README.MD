@@ -6,7 +6,7 @@ Visit [this page](https://dns.hetzner.com/settings/api-token) to generate a Hetz
 
 ## Sample usage
 
-> Refer to the wiki tab in this repository for further examples.
+Refer to the [wiki tab](https://github.com/StarHack/go-hetzner-dns/wiki) in this repository for further examples.
 
 ```go
 package main
