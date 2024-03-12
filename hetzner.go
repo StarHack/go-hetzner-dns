@@ -64,14 +64,6 @@ type PrimaryServer struct {
 	Address  string    `json:"address"`
 }
 
-// API Base URL
-func (h *Hetzner) apiBaseURL() string {
-	if len(h.APIBaseUrl) > 0 {
-		return h.APIBaseUrl
-	}
-	return "https://dns.hetzner.com/api/v1"
-}
-
 // Finds all zones accessible by the current API key
 func (h *Hetzner) FindAllZones() ([]Zone, error) {
 	url := fmt.Sprintf("%s/zones", h.apiBaseURL())
@@ -623,6 +615,15 @@ func (h *Hetzner) DeletePrimaryServer(id string) (PrimaryServer, error) {
 	return primaryServer, nil
 }
 
+// Helper method to return base url of the api (or default value if it wasn't set)
+func (h *Hetzner) apiBaseURL() string {
+	if len(h.APIBaseUrl) > 0 {
+		return h.APIBaseUrl
+	}
+	return "https://dns.hetzner.com/api/v1"
+}
+
+// Helper method to create an api error message
 func (h *Hetzner) createApiErrorMessage(resp *http.Response) error {
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
