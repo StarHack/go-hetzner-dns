@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -90,8 +91,7 @@ func (h *Hetzner) FindAllZones() ([]Zone, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
-		return []Zone{}, fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(body))
+		return []Zone{}, h.createApiErrorMessage(resp)
 	}
 
 	var zonesResponse struct {
@@ -111,7 +111,7 @@ func (h *Hetzner) FindZoneID(domainName string) (string, error) {
 	}
 
 	for _, zone := range zones {
-		if zone.Name == domainName {
+		if strings.EqualFold(zone.Name, domainName) {
 			return zone.ID, nil
 		}
 	}
@@ -138,8 +138,7 @@ func (h *Hetzner) FindAllRecordsForZone(zoneID string) ([]RecordResponse, error)
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
-		return nil, fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(body))
+		return nil, h.createApiErrorMessage(resp)
 	}
 
 	var recordsResponse struct {
@@ -160,7 +159,7 @@ func (h *Hetzner) FindRecordsByName(zoneID string, recordName string) ([]RecordR
 	}
 	var matchingRecords []RecordResponse
 	for _, record := range records {
-		if record.Name == recordName {
+		if strings.EqualFold(record.Name, recordName) {
 			matchingRecords = append(matchingRecords, record)
 		}
 	}
@@ -222,11 +221,9 @@ func (h *Hetzner) UpdateRecord(zoneID, recordID, recordType, recordName, recordV
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
-		return fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(body))
+		return h.createApiErrorMessage(resp)
 	}
 
-	fmt.Println("DNS record updated successfully")
 	return nil
 }
 
@@ -262,11 +259,9 @@ func (h *Hetzner) CreateRecord(zoneID, recordType, recordName, recordValue strin
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusCreated {
-		body, _ := io.ReadAll(resp.Body)
-		return fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(body))
+		return h.createApiErrorMessage(resp)
 	}
 
-	fmt.Println("DNS record created successfully")
 	return nil
 }
 
@@ -298,8 +293,7 @@ func (h *Hetzner) BulkCreateRecord(zoneID string, records []RecordUpdateRequest)
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
-		return fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(body))
+		return h.createApiErrorMessage(resp)
 	}
 
 	return nil
@@ -333,8 +327,7 @@ func (h *Hetzner) BulkUpdateRecord(zoneID string, records []RecordUpdateRequest)
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
-		return fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(body))
+		return h.createApiErrorMessage(resp)
 	}
 
 	return nil
@@ -377,7 +370,6 @@ func (h *Hetzner) DeleteRecord(recordID string) error {
 		return fmt.Errorf("API request failed with status %d", resp.StatusCode)
 	}
 
-	fmt.Println("DNS record deleted successfully")
 	return nil
 }
 
@@ -432,8 +424,7 @@ func (h *Hetzner) ValidateZoneFile(zoneFile string) error {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
-		return fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(body))
+		return h.createApiErrorMessage(resp)
 	}
 
 	return nil
@@ -464,8 +455,7 @@ func (h *Hetzner) ImportZoneFile(zoneID, zoneFile string) error {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
-		return fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(body))
+		return h.createApiErrorMessage(resp)
 	}
 
 	return nil
@@ -490,8 +480,7 @@ func (h *Hetzner) FindAllPrimaryServers() (PrimaryServers, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
-		return PrimaryServers{}, fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(body))
+		return PrimaryServers{}, h.createApiErrorMessage(resp)
 	}
 
 	var primaryServers = PrimaryServers{}
@@ -531,8 +520,7 @@ func (h *Hetzner) CreatePrimaryServer(zoneID string, address string, port int) e
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
-		return fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(body))
+		return h.createApiErrorMessage(resp)
 	}
 
 	return nil
@@ -569,8 +557,7 @@ func (h *Hetzner) UpdatePrimaryServer(zoneID string, id string, address string, 
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
-		return fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(body))
+		return h.createApiErrorMessage(resp)
 	}
 
 	return nil
@@ -596,8 +583,7 @@ func (h *Hetzner) GetPrimaryServer(id string) (PrimaryServer, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
-		return PrimaryServer{}, fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(body))
+		return PrimaryServer{}, h.createApiErrorMessage(resp)
 	}
 
 	var primaryServer = PrimaryServer{}
@@ -627,8 +613,7 @@ func (h *Hetzner) DeletePrimaryServer(id string) (PrimaryServer, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
-		return PrimaryServer{}, fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(body))
+		return PrimaryServer{}, h.createApiErrorMessage(resp)
 	}
 
 	var primaryServer = PrimaryServer{}
@@ -636,4 +621,12 @@ func (h *Hetzner) DeletePrimaryServer(id string) (PrimaryServer, error) {
 		return PrimaryServer{}, fmt.Errorf("failed to decode response body: %w", err)
 	}
 	return primaryServer, nil
+}
+
+func (h *Hetzner) createApiErrorMessage(resp *http.Response) error {
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	return fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(body))
 }
