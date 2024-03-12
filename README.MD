@@ -88,10 +88,10 @@ As of today, the current version of Hetzner DNS Public API is `1.1.1`. So far, t
 
 ### Primary Servers
 
+**The following endpoints were implemented but not tested yet.**
+
 - [x] Get All Primary Servers
 - [x] Create Primary Server
 - [x] Get Primary Server
 - [x] Update Primary Server
 - [x] Delete Primary Server
-
-- **The primary server endpoints have been implemented but were not tested yet.**
