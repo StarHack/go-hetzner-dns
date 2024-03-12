@@ -59,7 +59,7 @@ go build
 
 ## Status
 
-As of today, the current version of Hetzner DNS Public API is `1.1.1`. So far, the following **core features** were either implemented completely or implemented partially. A lot of error handling is still missing and so are extras such as pagination but the basic functionality is there.
+As of today, the current version of Hetzner DNS Public API is `1.1.1`. So far, the following **core features** were implemented. A couple of features such as pagination are still missing but the basic functionality for all of the provided endpoints is there.
 
 ### Authentication
 
