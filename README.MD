@@ -4,6 +4,8 @@ This is my implementation of golang support for the [Hetzner Public DNS API](htt
 
 ## Sample usage
 
+> Refer to the wiki tab in this repository for further examples.
+
 ```go
 package main
 
@@ -25,6 +27,17 @@ func main() {
   for _, zone := range zones {
     fmt.Println(zone.Name)
   }
+
+  zoneId, err := h.FindZoneID("example.com")
+
+  if err != nil {
+    panic(err)
+  }
+
+  h.CreateOrUpdateRecord(zoneId, "A", "www", "1.2.3.4")
+  h.CreateRecord(zoneId, "TXT", "_acme-challenge", "ABCD")
+  h.UpdateRecord(...)
+  h.DeleteRecord(...)
 
   data, _ := h.ExportZoneFile("example.com")
   os.WriteFile("zone.txt", data, 0755)
